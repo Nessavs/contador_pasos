@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'add_info_screen.dart'; // Importa a próxima tela
+import 'add_info_screen.dart';
+import 'mock_auth_service.dart';
 
 class CreateAccountScreen extends StatefulWidget {
   const CreateAccountScreen({super.key});
@@ -10,7 +11,72 @@ class CreateAccountScreen extends StatefulWidget {
 }
 
 class _CreateAccountScreenState extends State<CreateAccountScreen> {
-  bool _termsAccepted = false; // Variável para controlar o estado do checkbox
+  // Controladores para pegar os valores dos campos
+  final _nomeController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+
+  // Instância do nosso serviço de autenticação mockado
+  final _authService = MockAuthService();
+  
+  // Variáveis para gerenciar o estado da UI
+  bool _termsAccepted = false;
+  bool _isLoading = false;
+
+  // Função para lidar com o processo de cadastro
+  Future<void> _handleCadastro() async {
+    // Validação simples para garantir que os campos não estão vazios
+    if (_nomeController.text.isEmpty || _emailController.text.isEmpty || _passwordController.text.isEmpty) {
+      _showErrorDialog('Por favor, preencha todos os campos.');
+      return;
+    }
+
+    if (!_termsAccepted) {
+      _showErrorDialog('Você precisa aceitar os Termos de Serviço.');
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    final success = await _authService.cadastrar(
+      _nomeController.text,
+      _emailController.text,
+      _passwordController.text,
+    );
+
+    // O setState é chamado dentro de um 'if (mounted)' para garantir que o widget ainda está na tela
+    // Isso evita erros caso o usuário saia da tela durante o loading.
+    if (mounted) {
+      setState(() => _isLoading = false);
+    
+      if (success) {
+        Navigator.of(context).push(
+          MaterialPageRoute(builder: (context) => const AddInfoScreen()),
+        );
+      } else {
+        _showErrorDialog('Este email já está em uso. Tente outro.');
+      }
+    }
+  }
+
+  // Função para exibir um pop-up de erro
+  void _showErrorDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Erro no Cadastro'),
+        content: Text(message),
+        actions: <Widget>[
+          TextButton(
+            child: const Text('Ok'),
+            onPressed: () {
+              Navigator.of(ctx).pop();
+            },
+          )
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -20,7 +86,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios, color: Colors.black),
+          icon: const Icon(Icons.arrow_back_ios, color: Colors.black),
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),
@@ -32,7 +98,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
             children: [
               const SizedBox(height: 20),
               Text(
-                'Crear\nnueva cuenta', // '\n' para quebrar a linha
+                'Crear\nnueva cuenta',
                 style: GoogleFonts.poppins(
                   fontSize: 32,
                   fontWeight: FontWeight.bold,
@@ -41,22 +107,24 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
               ),
               const SizedBox(height: 40),
               TextField(
+                controller: _nomeController,
                 decoration: InputDecoration(
-                  labelText: 'Vanessa da Silva',
+                  labelText: 'Nome completo',
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                 ),
               ),
               const SizedBox(height: 20),
               TextField(
+                controller: _emailController,
                 keyboardType: TextInputType.emailAddress,
                 decoration: InputDecoration(
-                  labelText: 'vanessa@gmail.com',
-                   labelStyle: TextStyle(color: Color(0xFFFA7A7A)), // Cor rosa para o texto
+                  labelText: 'Email',
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                 ),
               ),
               const SizedBox(height: 20),
               TextField(
+                controller: _passwordController,
                 obscureText: true,
                 decoration: InputDecoration(
                   labelText: 'Password',
@@ -64,8 +132,6 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                 ),
               ),
               const SizedBox(height: 20),
-              
-              // Checkbox para Termos de Serviço
               Row(
                 children: [
                   Checkbox(
@@ -75,9 +141,8 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                         _termsAccepted = value ?? false;
                       });
                     },
-                    activeColor: Color(0xFFFA7A7A),
+                    activeColor: const Color(0xFFFA7A7A),
                   ),
-                  // Usamos Expanded para o texto não estourar a tela
                   const Expanded(
                     child: Text.rich(
                       TextSpan(
@@ -87,13 +152,11 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                           TextSpan(
                             text: 'Terminos de Servicio',
                             style: TextStyle(color: Color(0xFFFA7A7A), decoration: TextDecoration.underline),
-                            // recognizer: TapGestureRecognizer()..onTap = () { /* Abrir link */ },
                           ),
                           TextSpan(text: ' y '),
                           TextSpan(
                             text: 'Política de Privacidad',
                             style: TextStyle(color: Color(0xFFFA7A7A), decoration: TextDecoration.underline),
-                             // recognizer: TapGestureRecognizer()..onTap = () { /* Abrir link */ },
                           ),
                         ],
                       ),
@@ -102,34 +165,37 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                 ],
               ),
               const SizedBox(height: 30),
-
-              // Botão Criar Conta
               ElevatedButton(
-                onPressed: () {
-                   // Navega para a tela de adicionar informações
-                   Navigator.of(context).push(
-                      MaterialPageRoute(builder: (context) => AddInfoScreen()),
-                   );
-                },
+                onPressed: _isLoading ? null : _handleCadastro,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFFFA7A7A),
                   minimumSize: const Size(double.infinity, 55),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
                 ),
-                child: Text('Crear Cuenta', style: GoogleFonts.poppins(fontSize: 18, color: Colors.white, fontWeight: FontWeight.w600)),
+                child: _isLoading
+                    ? const CircularProgressIndicator(color: Colors.white)
+                    : Text(
+                        'Crear Cuenta',
+                        style: GoogleFonts.poppins(
+                          fontSize: 18,
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
               ),
               const SizedBox(height: 20),
-
-              // Link para Login
-               Row(
+              Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text('Ya tienes cuenta? ', style: GoogleFonts.poppins()),
                   GestureDetector(
-                    onTap: () => Navigator.of(context).pop(), // Volta para a tela de login
+                    onTap: () => Navigator.of(context).pop(),
                     child: Text(
                       'Login',
-                      style: GoogleFonts.poppins(color: const Color(0xFFFA7A7A), fontWeight: FontWeight.bold),
+                      style: GoogleFonts.poppins(
+                        color: const Color(0xFFFA7A7A),
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ],
