@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'splash_screen.dart'; // Importa a nossa tela splash
+import 'splash_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -11,12 +11,12 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Contador de Passos',
-      debugShowCheckedModeBanner: false, // Remove a faixa de "Debug"
+      title: 'Contador de Pasos',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: SplashScreen(), // Define a SplashScreen como a tela inicial!
+      home: SplashScreen(),
     );
   }
 }

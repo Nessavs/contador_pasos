@@ -11,28 +11,30 @@ class CreateAccountScreen extends StatefulWidget {
 }
 
 class _CreateAccountScreenState extends State<CreateAccountScreen> {
-  // Controladores para pegar os valores dos campos
+  // Controladores para obtener los valores de los campos
   final _nomeController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
 
-  // Instância do nosso serviço de autenticação mockado
+  // Instancia de nuestro servicio de autenticación simulado (mock)
   final _authService = MockAuthService();
-  
-  // Variáveis para gerenciar o estado da UI
+
+  // Variables para gestionar el estado de la UI
   bool _termsAccepted = false;
   bool _isLoading = false;
 
-  // Função para lidar com o processo de cadastro
+  // Función para manejar el proceso de registro
   Future<void> _handleCadastro() async {
-    // Validação simples para garantir que os campos não estão vazios
-    if (_nomeController.text.isEmpty || _emailController.text.isEmpty || _passwordController.text.isEmpty) {
-      _showErrorDialog('Por favor, preencha todos os campos.');
+    // Validación simple para asegurar que los campos no estén vacíos
+    if (_nomeController.text.isEmpty ||
+        _emailController.text.isEmpty ||
+        _passwordController.text.isEmpty) {
+      _showErrorDialog('Por favor, rellene todos los campos.');
       return;
     }
 
     if (!_termsAccepted) {
-      _showErrorDialog('Você precisa aceitar os Termos de Serviço.');
+      _showErrorDialog('Necesitas aceptar los Términos de Servicio.');
       return;
     }
 
@@ -43,28 +45,29 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
       _emailController.text,
       _passwordController.text,
     );
-
-    // O setState é chamado dentro de um 'if (mounted)' para garantir que o widget ainda está na tela
-    // Isso evita erros caso o usuário saia da tela durante o loading.
+    
+    // Se llama a setState dentro de un 'if (mounted)' para asegurar que el widget todavía está en el árbol de widgets.
+    // Esto evita errores si el usuario sale de la pantalla durante la carga.
     if (mounted) {
       setState(() => _isLoading = false);
-    
+
       if (success) {
         Navigator.of(context).push(
           MaterialPageRoute(builder: (context) => const AddInfoScreen()),
         );
       } else {
-        _showErrorDialog('Este email já está em uso. Tente outro.');
+        _showErrorDialog(
+            'Este correo electrónico ya está en uso. Pruebe con otro.');
       }
     }
   }
 
-  // Função para exibir um pop-up de erro
+  // Función para mostrar un diálogo de error
   void _showErrorDialog(String message) {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Erro no Cadastro'),
+        title: const Text('Error en el Registro'),
         content: Text(message),
         actions: <Widget>[
           TextButton(
@@ -109,8 +112,9 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
               TextField(
                 controller: _nomeController,
                 decoration: InputDecoration(
-                  labelText: 'Nome completo',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  labelText: 'Nombre completo',
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12)),
                 ),
               ),
               const SizedBox(height: 20),
@@ -119,7 +123,8 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                 keyboardType: TextInputType.emailAddress,
                 decoration: InputDecoration(
                   labelText: 'Email',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12)),
                 ),
               ),
               const SizedBox(height: 20),
@@ -127,8 +132,9 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                 controller: _passwordController,
                 obscureText: true,
                 decoration: InputDecoration(
-                  labelText: 'Password',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  labelText: 'Contraseña',
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12)),
                 ),
               ),
               const SizedBox(height: 20),
@@ -151,12 +157,16 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                         children: <TextSpan>[
                           TextSpan(
                             text: 'Terminos de Servicio',
-                            style: TextStyle(color: Color(0xFFFA7A7A), decoration: TextDecoration.underline),
+                            style: TextStyle(
+                                color: Color(0xFFFA7A7A),
+                                decoration: TextDecoration.underline),
                           ),
                           TextSpan(text: ' y '),
                           TextSpan(
                             text: 'Política de Privacidad',
-                            style: TextStyle(color: Color(0xFFFA7A7A), decoration: TextDecoration.underline),
+                            style: TextStyle(
+                                color: Color(0xFFFA7A7A),
+                                decoration: TextDecoration.underline),
                           ),
                         ],
                       ),
@@ -170,7 +180,8 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFFFA7A7A),
                   minimumSize: const Size(double.infinity, 55),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30)),
                 ),
                 child: _isLoading
                     ? const CircularProgressIndicator(color: Colors.white)
