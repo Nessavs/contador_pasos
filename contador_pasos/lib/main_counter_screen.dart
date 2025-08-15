@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'dart:async'; // Para simular a contagem
+import 'dart:async'; // Para simular el conteo
 
 class MainCounterScreen extends StatefulWidget {
+  const MainCounterScreen({super.key});
+
   @override
-  _MainCounterScreenState createState() => _MainCounterScreenState();
+  State<MainCounterScreen> createState() => _MainCounterScreenState();
 }
 
 class _MainCounterScreenState extends State<MainCounterScreen> {
@@ -13,27 +15,26 @@ class _MainCounterScreenState extends State<MainCounterScreen> {
   bool _isRunning = false;
   Timer? _timer;
 
-  // Função para o botão Iniciar/Parar
+  // Constante del modo demo: 1 paso = 0.04 kcal
+  static const double _kcalPerStep = 0.04;
+
+  // Botón Iniciar/Parar
   void _startStop() {
-    setState(() {
-      _isRunning = !_isRunning;
-      if (_isRunning) {
-        // Inicia um timer para simular a contagem de passos
-        _timer = Timer.periodic(Duration(seconds: 1), (timer) {
-          setState(() {
-            _stepCount++;
-            // Fórmula de exemplo: 1 passo = 0.04 calorias
-            _calories = _stepCount * 0.04;
-          });
-        });
-      } else {
-        // Para o timer se o contador for pausado
-        _timer?.cancel();
-      }
+    if (_isRunning) {
+      _timer?.cancel();
+      setState(() => _isRunning = false);
+      return;
+    }
+    setState(() => _isRunning = true);
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      setState(() {
+        _stepCount++;
+        _calories = _stepCount * _kcalPerStep;
+      });
     });
   }
 
-  // Função para o botão Reiniciar
+  // Botón Reiniciar
   void _reset() {
     _timer?.cancel();
     setState(() {
@@ -45,7 +46,7 @@ class _MainCounterScreenState extends State<MainCounterScreen> {
 
   @override
   void dispose() {
-    _timer?.cancel(); // Garante que o timer seja cancelado ao sair da tela
+    _timer?.cancel(); // Asegura cancelar el timer al salir
     super.dispose();
   }
 
@@ -54,78 +55,90 @@ class _MainCounterScreenState extends State<MainCounterScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: Text('Contador de Passos', style: GoogleFonts.poppins(color: Colors.black)),
+        title: Text('Contador de pasos', style: GoogleFonts.poppins(color: Colors.black)),
         backgroundColor: Colors.white,
         elevation: 0,
+        iconTheme: const IconThemeData(color: Colors.black),
       ),
       body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // Mostrador de Passos
-            Text(
-              'Passos',
-              style: GoogleFonts.poppins(fontSize: 24, color: Colors.grey[600]),
-            ),
-            Text(
-              '$_stepCount',
-              style: GoogleFonts.poppins(
-                fontSize: 80,
-                fontWeight: FontWeight.bold,
-                color: Colors.black,
-              ),
-            ),
-            SizedBox(height: 40),
-
-            // Mostrador de Calorias
-            Text(
-              'Calorias',
-              style: GoogleFonts.poppins(fontSize: 24, color: Colors.grey[600]),
-            ),
-            Text(
-              _calories.toStringAsFixed(2), // Mostra com 2 casas decimais
-              style: GoogleFonts.poppins(
-                fontSize: 40,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFFFA7A7A),
-              ),
-            ),
-            SizedBox(height: 60),
-
-            // Botões de Controle
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                // Botão Iniciar/Parar
-                ElevatedButton(
-                  onPressed: _startStop,
-                  child: Text(_isRunning ? 'Parar' : 'Iniciar', style: TextStyle(fontSize: 18)),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: _isRunning ? Colors.grey : Color(0xFFFA7A7A),
-                    foregroundColor: Colors.white,
-                    padding: EdgeInsets.symmetric(horizontal: 40, vertical: 15),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30),
-                    ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // Banner de modo demo
+              Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFEFEF),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: const [
+                      Icon(Icons.info_outline, size: 18, color: Color(0xFFFA7A7A)),
+                      SizedBox(width: 8),
+                      Text('Modo demo (sin sensor)', style: TextStyle(color: Color(0xFFFA7A7A))),
+                    ],
                   ),
                 ),
+              ),
 
-                // Botão Reiniciar
-                ElevatedButton(
-                  onPressed: _reset,
-                  child: Text('Reiniciar', style: TextStyle(fontSize: 18)),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.black87,
-                    foregroundColor: Colors.white,
-                    padding: EdgeInsets.symmetric(horizontal: 40, vertical: 15),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30),
+              // Mostrador de Pasos
+              Text('Pasos', style: GoogleFonts.poppins(fontSize: 24, color: Colors.grey[600])),
+              Text(
+                '$_stepCount',
+                style: GoogleFonts.poppins(fontSize: 80, fontWeight: FontWeight.bold, color: Colors.black),
+              ),
+              const SizedBox(height: 40),
+
+              // Mostrador de Calorías
+              Text('Calorías', style: GoogleFonts.poppins(fontSize: 24, color: Colors.grey[600])),
+              Text(
+                _calories.toStringAsFixed(2), // 2 decimales
+                style: GoogleFonts.poppins(fontSize: 40, fontWeight: FontWeight.bold, color: Color(0xFFFA7A7A)),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                '$_kcalPerStep kcal por paso (modo demo)',
+                style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey[600]),
+              ),
+
+              const SizedBox(height: 60),
+
+              // Botones de Control
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  // Botón Iniciar/Parar
+                  ElevatedButton(
+                    onPressed: _startStop,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: _isRunning ? Colors.grey : const Color(0xFFFA7A7A),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
                     ),
+                    child: Text(_isRunning ? 'Parar' : 'Iniciar', style: const TextStyle(fontSize: 18)),
                   ),
-                ),
-              ],
-            )
-          ],
+
+                  // Botón Reiniciar
+                  ElevatedButton(
+                    onPressed: _reset,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.black87,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                    ),
+                    child: const Text('Reiniciar', style: TextStyle(fontSize: 18)),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
