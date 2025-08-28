@@ -37,8 +37,15 @@ class _AddInfoScreenState extends State<AddInfoScreen> {
         genero: _generoCtrl.text.isEmpty ? 'N/D' : _generoCtrl.text,
       );
 
+      // Navegar a SummaryScreen con pasos y calorías iniciales en 0
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => SummaryScreen(userInfo: info)),
+        MaterialPageRoute(
+          builder: (_) => SummaryScreen(
+            userInfo: info,
+            pasos: 0,       // recién inicia, 0 pasos
+            calorias: 0.0,  // recién inicia, 0 calorías
+          ),
+        ),
       );
     } catch (e) {
       _showError('Revisa los valores ingresados.');
