@@ -48,12 +48,33 @@ class _MainCounterScreenState extends State<MainCounterScreen> {
     await prefs.setInt('steps', _stepCount);
     await prefs.setDouble('calories', _calories);
   }
+  //estructura para guardar historial
+  Future<void> _saveHistorialEntry() async {
+  final prefs = await SharedPreferences.getInstance();
+  final historial = prefs.getStringList('historial') ?? [];
+
+  final nuevoRegistro = {
+    'fecha': DateTime.now().toIso8601String(),
+    'pasos': _stepCount,
+    'calorias': _calories,
+  };
+
+  historial.add(nuevoRegistro.toString()); // Guardamos como string
+
+  await prefs.setStringList('historial', historial);
+  // 👇 Aquí imprimimos el historial actualizado
+  debugPrint('Historial actualizado: $historial');
+}
+
 
   /// Iniciar o detener el contador
-  void _startStop() {
+  Future<void> _startStop() async {
     if (_isRunning) {
       _timer?.cancel();
       setState(() => _isRunning = false);
+      await _saveHistorialEntry(); // Guardar entrada en el historial al detener
+
+
       return;
     }
 
