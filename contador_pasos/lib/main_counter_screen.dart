@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'dart:async'; // Para simular el conteo
+import 'package:shared_preferences/shared_preferences.dart'; // Para persistencia local
+import 'summary_screen.dart'; // Importar pantalla de resumen
+import 'models/user_info.dart'; // Importar modelo UserInfo
 
 class MainCounterScreen extends StatefulWidget {
   const MainCounterScreen({super.key});
@@ -10,31 +13,63 @@ class MainCounterScreen extends StatefulWidget {
 }
 
 class _MainCounterScreenState extends State<MainCounterScreen> {
-  int _stepCount = 0;
-  double _calories = 0.0;
-  bool _isRunning = false;
-  Timer? _timer;
+  int _stepCount = 0;      // Número de pasos
+  double _calories = 0.0;  // Calorías quemadas
+  bool _isRunning = false; // Estado del contador
+  Timer? _timer;           // Timer para simular pasos
 
-  // Constante del modo demo: 1 paso = 0.04 kcal
+  // Constante: 1 paso = 0.04 kcal
   static const double _kcalPerStep = 0.04;
 
-  // Botón Iniciar/Parar
+  @override
+  void initState() {
+    super.initState();
+    _loadData(); // Cargar pasos y calorías guardados al iniciar
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel(); // Cancelar timer al salir de la pantalla
+    super.dispose();
+  }
+
+  /// Cargar pasos y calorías desde SharedPreferences
+  Future<void> _loadData() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _stepCount = prefs.getInt('steps') ?? 0;        // Valor por defecto: 0
+      _calories = prefs.getDouble('calories') ?? 0.0; // Valor por defecto: 0.0
+    });
+  }
+
+  /// Guardar pasos y calorías en SharedPreferences
+  Future<void> _saveData() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt('steps', _stepCount);
+    await prefs.setDouble('calories', _calories);
+  }
+
+  /// Iniciar o detener el contador
   void _startStop() {
     if (_isRunning) {
       _timer?.cancel();
       setState(() => _isRunning = false);
       return;
     }
+
     setState(() => _isRunning = true);
+
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       setState(() {
         _stepCount++;
         _calories = _stepCount * _kcalPerStep;
       });
+
+      _saveData(); // Guardar datos cada segundo
     });
   }
 
-  // Botón Reiniciar
+  /// Reiniciar el contador
   void _reset() {
     _timer?.cancel();
     setState(() {
@@ -42,13 +77,36 @@ class _MainCounterScreenState extends State<MainCounterScreen> {
       _calories = 0.0;
       _isRunning = false;
     });
+
+    _saveData(); // Guardar reinicio
   }
 
-  @override
-  void dispose() {
-    _timer?.cancel(); // Asegura cancelar el timer al salir
-    super.dispose();
-  }
+  // /// Navegar a SummaryScreen con los datos actuales
+  // void _goToSummary() {
+  //   // Aquí puedes crear un UserInfo mock o adaptarlo si tienes datos reales
+  //   final userInfo = UserInfo(pesoKg: 70, alturaCm: 175, edad: 30, genero: 'M');
+
+  //   Navigator.of(context).push(
+  //     MaterialPageRoute(
+  //       builder: (_) => SummaryScreen(userInfo: userInfo),
+  //     ),
+  //   );
+  // }
+  /// Navegar a SummaryScreen con los datos actuales
+void _goToSummary() {
+  // Aquí puedes crear un UserInfo mock o adaptarlo si tienes datos reales
+  final userInfo = UserInfo(pesoKg: 70, alturaCm: 175, edad: 30, genero: 'M');
+
+  Navigator.of(context).push(
+    MaterialPageRoute(
+      builder: (_) => SummaryScreen(
+        userInfo: userInfo,
+        pasos: _stepCount,      // PASO ACTUAL
+        calorias: _calories,    // CALORÍAS ACTUALES
+      ),
+    ),
+  );
+}
 
   @override
   Widget build(BuildContext context) {
@@ -86,7 +144,7 @@ class _MainCounterScreenState extends State<MainCounterScreen> {
                 ),
               ),
 
-              // Mostrador de Pasos
+              // Mostrador de pasos
               Text('Pasos', style: GoogleFonts.poppins(fontSize: 24, color: Colors.grey[600])),
               Text(
                 '$_stepCount',
@@ -94,10 +152,10 @@ class _MainCounterScreenState extends State<MainCounterScreen> {
               ),
               const SizedBox(height: 40),
 
-              // Mostrador de Calorías
+              // Mostrador de calorías
               Text('Calorías', style: GoogleFonts.poppins(fontSize: 24, color: Colors.grey[600])),
               Text(
-                _calories.toStringAsFixed(2), // 2 decimales
+                _calories.toStringAsFixed(2),
                 style: GoogleFonts.poppins(fontSize: 40, fontWeight: FontWeight.bold, color: Color(0xFFFA7A7A)),
               ),
               const SizedBox(height: 6),
@@ -105,14 +163,12 @@ class _MainCounterScreenState extends State<MainCounterScreen> {
                 '$_kcalPerStep kcal por paso (modo demo)',
                 style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey[600]),
               ),
-
               const SizedBox(height: 60),
 
-              // Botones de Control
+              // Botones de control
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  // Botón Iniciar/Parar
                   ElevatedButton(
                     onPressed: _startStop,
                     style: ElevatedButton.styleFrom(
@@ -123,8 +179,6 @@ class _MainCounterScreenState extends State<MainCounterScreen> {
                     ),
                     child: Text(_isRunning ? 'Parar' : 'Iniciar', style: const TextStyle(fontSize: 18)),
                   ),
-
-                  // Botón Reiniciar
                   ElevatedButton(
                     onPressed: _reset,
                     style: ElevatedButton.styleFrom(
@@ -136,6 +190,20 @@ class _MainCounterScreenState extends State<MainCounterScreen> {
                     child: const Text('Reiniciar', style: TextStyle(fontSize: 18)),
                   ),
                 ],
+              ),
+
+              const SizedBox(height: 20),
+
+              // BOTÓN NUEVO: Ver Resumen
+              ElevatedButton(
+                onPressed: _goToSummary,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFFA7A7A),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                ),
+                child: const Text('Ver Resumen', style: TextStyle(fontSize: 18)),
               ),
             ],
           ),

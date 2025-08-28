@@ -4,6 +4,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'login_screen.dart'; // Importe sua tela de login
 
 class SplashScreen extends StatefulWidget {
+  const SplashScreen({super.key});
+
   @override
   _SplashScreenState createState() => _SplashScreenState();
 }

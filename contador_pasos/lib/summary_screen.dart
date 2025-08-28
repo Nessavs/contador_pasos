@@ -5,17 +5,21 @@ import 'history_screen.dart';
 
 class SummaryScreen extends StatelessWidget {
   final UserInfo userInfo;
-  const SummaryScreen({super.key, required this.userInfo});
+  final int pasos;       // Recibimos los pasos actuales
+  final double calorias; // Recibimos las calorías actuales
+
+  const SummaryScreen({
+    super.key,
+    required this.userInfo,
+    required this.pasos,
+    required this.calorias,
+  });
+
+  final double _kcalPerStep = 0.04;
+  final int ritmo = 74; // mock del ritmo cardíaco
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    // Mock inicial (luego conectamos fuentes reales)
-    final pasos = 0; // integrar pedómetro/contador
-    final calorias = pasos * 0.04; // consistente con MainCounterScreen
-    final ritmo = 74; // mock
-
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -33,11 +37,14 @@ class SummaryScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 8),
-              Text('Información de hoy', style: GoogleFonts.poppins(fontSize: 28, fontWeight: FontWeight.w800)),
+              Text('Información de hoy',
+                  style: GoogleFonts.poppins(
+                      fontSize: 28, fontWeight: FontWeight.w800)),
               const SizedBox(height: 6),
               Text(
                 _mesAnoActual(),
-                style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey[600]),
+                style:
+                    GoogleFonts.poppins(fontSize: 14, color: Colors.grey[600]),
               ),
               const SizedBox(height: 24),
 
@@ -74,9 +81,8 @@ class SummaryScreen extends StatelessWidget {
                 unit: 'bpm',
               ),
 
-              // Placeholder del gráfico inferior (para mantener layout del Figma)
               const SizedBox(height: 18),
-              _GraphPlaceholder(),
+              const _GraphPlaceholder(),
 
               const Spacer(),
 
@@ -94,12 +100,16 @@ class SummaryScreen extends StatelessWidget {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFFFA7A7A),
                     minimumSize: const Size(double.infinity, 55),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30)),
                     elevation: 0,
                   ),
                   child: Text(
                     'Historial',
-                    style: GoogleFonts.poppins(fontSize: 18, color: Colors.white, fontWeight: FontWeight.w600),
+                    style: GoogleFonts.poppins(
+                        fontSize: 18,
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600),
                   ),
                 ),
               ),
@@ -137,7 +147,7 @@ class _InfoCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: const Color(0xFFF8F3F8), // leve rosado/gris como en el Figma
+        color: const Color(0xFFF8F3F8),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -155,7 +165,9 @@ class _InfoCard extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(title, style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey[700])),
+                Text(title,
+                    style:
+                        GoogleFonts.poppins(fontSize: 14, color: Colors.grey[700])),
                 Icon(icon, color: const Color(0xFFFA7A7A)),
               ],
             ),
@@ -163,9 +175,13 @@ class _InfoCard extends StatelessWidget {
             Row(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                Text(value, style: GoogleFonts.poppins(fontSize: 26, fontWeight: FontWeight.w700)),
+                Text(value,
+                    style: GoogleFonts.poppins(
+                        fontSize: 26, fontWeight: FontWeight.w700)),
                 const SizedBox(width: 6),
-                Text(unit, style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey[600])),
+                Text(unit,
+                    style:
+                        GoogleFonts.poppins(fontSize: 12, color: Colors.grey[600])),
               ],
             ),
           ],
@@ -209,7 +225,9 @@ class _BigInfoCard extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(title, style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey[700])),
+                Text(title,
+                    style:
+                        GoogleFonts.poppins(fontSize: 14, color: Colors.grey[700])),
                 Icon(icon, color: const Color(0xFFFA7A7A)),
               ],
             ),
@@ -217,9 +235,13 @@ class _BigInfoCard extends StatelessWidget {
             Row(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                Text(value, style: GoogleFonts.poppins(fontSize: 26, fontWeight: FontWeight.w700)),
+                Text(value,
+                    style: GoogleFonts.poppins(
+                        fontSize: 26, fontWeight: FontWeight.w700)),
                 const SizedBox(width: 6),
-                Text(unit, style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey[600])),
+                Text(unit,
+                    style:
+                        GoogleFonts.poppins(fontSize: 12, color: Colors.grey[600])),
               ],
             ),
           ],
@@ -246,7 +268,9 @@ class _GraphPlaceholder extends StatelessWidget {
                 child: Container(
                   height: (20 + (i * 5) % 60).toDouble(),
                   decoration: BoxDecoration(
-                    color: i % 4 == 0 ? Colors.black : const Color(0xFFFA7A7A).withOpacity(0.4),
+                    color: i % 4 == 0
+                        ? Colors.black
+                        : const Color(0xFFFA7A7A).withOpacity(0.4),
                     borderRadius: BorderRadius.circular(4),
                   ),
                 ),
